@@ -2,8 +2,8 @@ import random
 from numpy import *
 class Guts:
     def __init__(self, pointLocations, linePointIndices):
-        self.tsCounting = 1
-        self.angle = 1/30
+        #self.tsCounting = 1
+        self.angle = 1/40
         self.speed = 0.1
         self.originalPointLocations = pointLocations
         self.pointLocations = pointLocations
@@ -17,7 +17,7 @@ class Guts:
         self.helmet = False
         #the next ___ lines are for managing the state of the adding of a point, if needed
         self.holdingPoint = False
-        self.zOfFromPoint = 1
+        self.zOfFromPoint = 20
         self.observerLocation = matrix([[0],[0],[0]],float32)
         self.observerBasisVectors = multiply(matrix([[1,0,0],[0,1,0],[0,0,1]],float32),matrix([[self.speed]],float32))
         self.chainBasisVectors = multiply(matrix([[1,0,0],[0,1,0],[0,0,1]],float32),matrix([[self.speed]],float32))
@@ -27,6 +27,18 @@ class Guts:
         self.yawRight = matrix([[cos(self.angle),0,sin(self.angle)],[0,1,0],[-sin(self.angle),0,cos(self.angle)]])
         self.anglePitchedAt = 0
         self.n = pointLocations.shape[1]
+        # dictionary
+        self.fwKey = '87'
+        self.bwKey = '83'
+        self.lfKey = '65'
+        self.rtKey = '68'
+        self.upKey = '32'
+        self.dnKey = '16'
+        self.pUKey = '38'
+        self.pDKey = '40'
+        self.yLKey = '37'
+        self.yRKey = '39'
+        self.moveDict = {self.fwKey: self.forward, self.bwKey: self.backward, self.lfKey: self.left, self.rtKey: self.right, self.upKey: self.up, self.dnKey: self.down, self.pUKey: self.lookUp, self.pDKey: self.lookDown, self.yLKey: self.lookLeft, self.yRKey: self.lookRight, 'none': self.none}
 
     def reset(self):
         self.pointLocation = self.originalPointLocations
@@ -55,24 +67,28 @@ class Guts:
             #print([endpoints[0,self.linePointIndices[0,i]], endpoints[1,self.linePointIndices[0,i]],endpoints[0,self.linePointIndices[0,i]], endpoints[1,self.linePointIndices[0,i]]])
             #canvas.create_line(random.randint(0,canvas.winfo_width()),random.randint(0,canvas.winfo_height()),random.randint(0,canvas.winfo_width()),random.randint(0,canvas.winfo_height()))
         if self.helmet:
-            for i in range(0,10):
-                #print("canvas.create_line(" + str(helmetEndpoints[0,self.helmetLinePointIndices[0,i]])+", "+str(helmetEndpoints[1,self.helmetLinePointIndices[0,i]])+", "+str(helmetEndpoints[0,self.helmetLinePointIndices[1,i]])+", "+str(helmetEndpoints[1,self.helmetLinePointIndices[1,i]])+")")
-                canvas.create_line(helmetEndpoints[0,self.helmetLinePointIndices[0,i]], helmetEndpoints[1,self.helmetLinePointIndices[0,i]], helmetEndpoints[0,self.helmetLinePointIndices[1,i]], helmetEndpoints[1,self.helmetLinePointIndices[1,i]])
-            #canvas.create_line(-14250.0, 5100.0, 599.9999977648258, 644.9999989941716)
-            #canvas.create_line(-14250.0, -3900.0, 599.9999977648258, 555.0000010058284)
-            #canvas.create_line(15750.0, 5100.0, 900.0000022351742, 644.9999989941716)
-            #canvas.create_line(15750.0, -3900.0, 900.0000022351742, 555.0000010058284)
-            #canvas.create_line(599.9999977648258, 644.9999989941716, 900.0000022351742, 644.9999989941716)
-            #canvas.create_line(599.9999977648258, 555.0000010058284, 900.0000022351742, 555.0000010058284)
+            #for i in range(0,10):
+            #    print("canvas.create_line(" + str(helmetEndpoints[0,self.helmetLinePointIndices[0,i]])+", "+str(helmetEndpoints[1,self.helmetLinePointIndices[0,i]])+", "+str(helmetEndpoints[0,self.helmetLinePointIndices[1,i]])+", "+str(helmetEndpoints[1,self.helmetLinePointIndices[1,i]])+")")
+            #    canvas.create_line(helmetEndpoints[0,self.helmetLinePointIndices[0,i]], helmetEndpoints[1,self.helmetLinePointIndices[0,i]], helmetEndpoints[0,self.helmetLinePointIndices[1,i]], helmetEndpoints[1,self.helmetLinePointIndices[1,i]])
+            canvas.create_line(-14250.0, 5100.0, 600.0, 645.0)
+            canvas.create_line(-14250.0, -3900.0, 600.0, 555.0)
+            canvas.create_line(15750.0, 5100.0, 900.0, 645.0)
+            canvas.create_line(15750.0, -3900.0, 900.0, 555.0)
+            canvas.create_line(600.0, 645.0, 900.0, 645.0)
+            canvas.create_line(600.0, 555.0, 900.0, 555.0)
+            canvas.create_line(-23250.0, 5100.0, 510.0, 645.0)
+            canvas.create_line(-23250.0, -3900.0, 510.0, 555.0)
+            canvas.create_line(24750.0, 5100.0, 990.0, 645.0)
+            canvas.create_line(24750.0, -3900.0, 990.0, 555.0)
 
     def act(self, buttons, canvas):
         for key in buttons:
-            self.move(key)
+            self.moveDict.get(str(key),self.moveDict['none'])()
         self.translate()
         self.paint(canvas)
 
     def interact(self, key, canvas):
-        print("interact called with key "+str(key))
+        ####################print("interact called with key "+str(key)+": editor mode is "+str(self.helmet))
         #\/ if 'i' is pressed at any time
         if key == 73:
             self.toggleHelmet()
@@ -116,10 +132,10 @@ class Guts:
         self.helmet = not self.helmet
         if self.helmet:
             self.speed = 0.5
-            self.angle = self.angle/3
+            self.angle = self.angle/2
         else:
             self.speed = 2
-            self.angle = self.angle*3
+            self.angle = self.angle*2
         self.observerBasisVectors = multiply(self.observerBasisVectors,matrix([[self.speed]]))
         self.chainBasisVectors = multiply(self.chainBasisVectors,matrix([[self.speed]]))
         self.pitchDown = matrix([[1,0,0],[0,cos(self.angle),-sin(self.angle)],[0,sin(self.angle),cos(self.angle)]])
@@ -128,32 +144,44 @@ class Guts:
         self.yawRight = matrix([[cos(self.angle),0,sin(self.angle)],[0,1,0],[-sin(self.angle),0,cos(self.angle)]])
 
     def move(self, key):
-        if key == 87:
-            self.observerLocation = add(self.observerLocation,self.chainBasisVectors[ix_([0,1,2],[2])])
-        elif key == 83:
-            self.observerLocation = subtract(self.observerLocation,self.chainBasisVectors[ix_([0,1,2],[2])])
-        elif key == 65:
-            self.observerLocation = subtract(self.observerLocation,self.observerBasisVectors[ix_([0,1,2],[0])])
-        elif key == 68:
-            self.observerLocation = add(self.observerLocation,self.observerBasisVectors[ix_([0,1,2],[0])])
-        elif key == 32:
-            self.observerLocation = add(self.observerLocation,self.chainBasisVectors[ix_([0,1,2],[1])])
-        elif key == 16:
-            self.observerLocation = subtract(self.observerLocation,self.chainBasisVectors[ix_([0,1,2],[1])])
-        elif key == 38:
-            if self.anglePitchedAt<1.55:
-                self.observerBasisVectors = self.observerBasisVectors@self.pitchUp
-                self.anglePitchedAt+=self.angle
-        elif key == 40:
-            if self.anglePitchedAt>-1.55:
-                self.observerBasisVectors = self.observerBasisVectors@self.pitchDown
-                self.anglePitchedAt-=self.angle
-        elif key == 37:
-            self.observerBasisVectors = self.chainBasisVectors@self.yawLeft@linalg.inv(self.chainBasisVectors)@self.observerBasisVectors
-            self.chainBasisVectors = self.yawLeft@self.chainBasisVectors
-        elif key == 39:
-            self.observerBasisVectors = self.chainBasisVectors@self.yawRight@linalg.inv(self.chainBasisVectors)@self.observerBasisVectors
-            self.chainBasisVectors = self.yawRight@self.chainBasisVectors
+        self.moveDict.get(str(key),self.moveDict['none'])()
+
+    def forward(self):
+        self.observerLocation = add(self.observerLocation,self.chainBasisVectors[ix_([0,1,2],[2])])
+    
+    def backward(self):
+        self.observerLocation = subtract(self.observerLocation,self.chainBasisVectors[ix_([0,1,2],[2])])
+    
+    def left(self):
+        self.observerLocation = subtract(self.observerLocation,self.observerBasisVectors[ix_([0,1,2],[0])])
+    
+    def right(self):
+        self.observerLocation = add(self.observerLocation,self.observerBasisVectors[ix_([0,1,2],[0])])
+    
+    def up(self):
+        self.observerLocation = add(self.observerLocation,self.chainBasisVectors[ix_([0,1,2],[1])])
+    
+    def down(self):
+        self.observerLocation = subtract(self.observerLocation,self.chainBasisVectors[ix_([0,1,2],[1])])
+
+    def lookUp(self):
+        if self.anglePitchedAt<1.55:
+            self.observerBasisVectors = self.observerBasisVectors@self.pitchUp
+            self.anglePitchedAt+=self.angle
+    
+    def lookDown(self):
+        if self.anglePitchedAt>-1.55:
+            self.observerBasisVectors = self.observerBasisVectors@self.pitchDown
+            self.anglePitchedAt-=self.angle
+
+    def lookLeft(self):
+        self.observerBasisVectors = self.chainBasisVectors@self.yawLeft@linalg.inv(self.chainBasisVectors)@self.observerBasisVectors
+        self.chainBasisVectors = self.yawLeft@self.chainBasisVectors
+    
+    def lookRight(self):
+        self.observerBasisVectors = self.chainBasisVectors@self.yawRight@linalg.inv(self.chainBasisVectors)@self.observerBasisVectors
+        self.chainBasisVectors = self.yawRight@self.chainBasisVectors
+
 
     def translate(self):
         self.pointLocations = subtract(self.originalPointLocations,self.observerLocation)
@@ -170,4 +198,6 @@ class Guts:
                 minIndex = i
         return minIndex
 
+    def none(self):
+        pass
 
