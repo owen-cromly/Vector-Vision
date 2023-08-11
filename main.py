@@ -3,7 +3,6 @@ import ctypes
 from guts import Guts
 import random
 from numpy import *
-print('etf')
 ctypes.windll.shcore.SetProcessDpiAwareness(True)
 
 
