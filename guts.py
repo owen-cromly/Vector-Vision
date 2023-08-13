@@ -2,7 +2,6 @@ import random
 from numpy import *
 class Guts:
     def __init__(self, pointLocations, linePointIndices):
-        #self.tsCounting = 1
         self.angle = 1/40
         self.speed = 0.1
         self.originalPointLocations = pointLocations
