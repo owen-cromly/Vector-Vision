@@ -209,39 +209,75 @@ class Guts:
 
     def forward(self):
         '''
-        Move one step FORWARD. The length of one step is the length of one/each vector of the chain basis. 
+        Move one step FORWARD (normal). The length of one step is the length of one/each vector of the chain basis. 
         '''
         self.observerLocation = add(self.observerLocation,self.chainBasisVectors[ix_([0,1,2],[2])])
+
+    def forwardFloat(self):
+        '''
+        Move one step FORWARD (as a floating head). The length of one step is the length of one/each vector of the observer basis. 
+        '''
+        self.observerLocation = add(self.observerLocation,self.observerBasisVectors[ix_([0,1,2],[2])])
     
     def backward(self):
         '''
-        Move one step BACKWARD. The length of one step is the length of one/each vector of the chain basis. 
+        Move one step BACKWARD (normal). The length of one step is the length of one/each vector of the chain basis. 
         '''
         self.observerLocation = subtract(self.observerLocation,self.chainBasisVectors[ix_([0,1,2],[2])])
+
+    def backwardFloat(self):
+        '''
+        Move one step BACKWARD (as a floating head). The length of one step is the length of one/each vector of the observer basis. 
+        '''
+        self.observerLocation = subtract(self.observerLocation,self.observerBasisVectors[ix_([0,1,2],[2])])
     
     def left(self):
         '''
-        Move one step LEFT. The length of one step is the length of one/each vector of the chain basis. 
+        Move one step LEFT (normal). The length of one step is the length of one/each vector of the chain basis. 
+        '''
+        self.observerLocation = subtract(self.observerLocation,self.chainBasisVectors[ix_([0,1,2],[0])])
+
+    def leftFloat(self):
+        '''
+        Move one step LEFT (as a floating head). The length of one step is the length of one/each vector of the observer basis. 
         '''
         self.observerLocation = subtract(self.observerLocation,self.observerBasisVectors[ix_([0,1,2],[0])])
     
     def right(self):
         '''
-        Move one step RIGHT. The length of one step is the length of one/each vector of the chain basis. 
+        Move one step RIGHT (normal). The length of one step is the length of one/each vector of the chain basis. 
+        '''
+        self.observerLocation = add(self.observerLocation,self.chainBasisVectors[ix_([0,1,2],[0])])
+
+    def rightFloat(self):
+        '''
+        Move one step RIGHT (as a floating head). The length of one step is the length of one/each vector of the observer basis. 
         '''
         self.observerLocation = add(self.observerLocation,self.observerBasisVectors[ix_([0,1,2],[0])])
     
     def up(self):
         '''
-        Move one step UP. The length of one step is the length of one/each vector of the chain basis. 
+        Move one step UP (normal). The length of one step is the length of one/each vector of the chain basis. 
         '''
         self.observerLocation = add(self.observerLocation,self.chainBasisVectors[ix_([0,1,2],[1])])
     
+    def upFloat(self):
+        '''
+        Move one step UP (as a floating head). The length of one step is the length of one/each vector of the observer basis. 
+        '''
+        self.observerLocation = add(self.observerLocation,self.observerBasisVectors[ix_([0,1,2],[1])])
+    
     def down(self):
         '''
-        Move one step DOWN. The length of one step is the length of one/each vector of the chain basis. 
+        Move one step DOWN (normal). The length of one step is the length of one/each vector of the chain basis. 
         '''
         self.observerLocation = subtract(self.observerLocation,self.chainBasisVectors[ix_([0,1,2],[1])])
+
+    def downFloat(self):
+        '''
+        Move one step DOWN (as a floating head). The length of one step is the length of one/each vector of the observer basis. 
+        '''
+        self.observerLocation = subtract(self.observerLocation,self.observerBasisVectors[ix_([0,1,2],[1])])
 
     def lookUp(self):
         '''
@@ -250,6 +286,12 @@ class Guts:
         if self.anglePitchedAt<1.55:
             self.observerBasisVectors = self.observerBasisVectors@self.pitchUp
             self.anglePitchedAt+=self.angle
+
+    def lookUpFloat(self):
+        '''
+        INCREASE pitch angle, with no bounds. ######### NEEDS EDITING TO ACCOUNT FOR CHAIN BASIS
+        '''
+        self.observerBasisVectors = self.observerBasisVectors@self.pitchUp
     
     def lookDown(self):
         '''
@@ -258,20 +300,40 @@ class Guts:
         if self.anglePitchedAt>-1.55:
             self.observerBasisVectors = self.observerBasisVectors@self.pitchDown
             self.anglePitchedAt-=self.angle
+    
+    def lookDownFloat(self):
+        '''
+        DECREASE pitch angle, with no bounds. ######### NEEDS EDITING TO ACCOUNT FOR CHAIN BASIS
+        '''
+        self.observerBasisVectors = self.observerBasisVectors@self.pitchDown
 
     def lookLeft(self):
         '''
-        Increment yaw toward the left.
+        Increment yaw toward the left (normal).
         '''
         self.observerBasisVectors = self.chainBasisVectors@self.yawLeft@linalg.inv(self.chainBasisVectors)@self.observerBasisVectors
         self.chainBasisVectors = self.yawLeft@self.chainBasisVectors
+
+    def lookLeftFloat(self):
+        '''
+        Increment yaw toward the left (as a floating head). ########## NEEDS EDITING TO ACCOUNT FOR CHAIN BASIS
+        '''
+        self.observerBasisVectors = self.observerBasisVectors@self.yawLeft
+        self.chainBasisVectors = self.yawLeft@self.chainBasisVectors ### edit here (here's a beginning of a plan. measure the forward observerBasisVector in the chain basis. take the forward component. that is your adjacent side. one is the hypotenuse. therefore, take inverseCos(fwd comp) to get the angle between forwardChainBasisVector and where it needs to be. then, yaw chainbasis by that angle. positive or negative? not sure yet. use the sign of the left-right component to determine that) not quite. fixed plan is on paper, needs to be augmented to support pitch retention when switching between modes. This plan might actually be more overcomplicated since chain basis only needs to be updated when switching back to standard mode from floating head. it can be re-established logically from scratch
     
     def lookRight(self):
         '''
-        Increment yaw toward the right.
+        Increment yaw toward the right (normal). 
         '''
-        self.observerBasisVectors = self.chainBasisVectors@self.yawRight@linalg.inv(self.chainBasisVectors)@self.observerBasisVectors
-        self.chainBasisVectors = self.yawRight@self.chainBasisVectors
+        self.observerBasisVectors = self.observerBasisVectors@self.yawRight
+        self.chainBasisVectors = self.yawRight@self.chainBasisVectors ### edit here
+    
+    def lookRightFloat(self):
+        '''
+        Increment yaw toward the right (as a floating head). ########## NEEDS EDITING TO ACCOUNT FOR CHAIN BASIS
+        '''
+        self.observerBasisVectors = self.chainBasisVectors@self.yawRight
+        self.chainBasisVectors = self.yawRight@self.chainBasisVectors ### edit here
 
 
     def translate(self):
