@@ -29,6 +29,8 @@ class MyGame(Tk):
     
     # random edit that has no effect
 
+    # yet another edit with no effect
+
     class MainMenu(Frame):
         '''
         This class represents the opening menu of the game
