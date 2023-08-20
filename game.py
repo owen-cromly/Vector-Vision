@@ -68,12 +68,13 @@ class MyGame(Tk):
         def __init__(self, parent, controller, bg):
             Frame.__init__(self, parent)
             self.controller = controller
-            titleMessage = Label(self, text = "Help Screen", font = Font(family = "Comic Sans", size = 20, weight = "bold"))
+            titleMessage = Label(self, text = "Help Screen", font = Font(family = "Helvetica", size = 30, weight = "bold"))
             titleMessage.pack(pady = 10)
-            description = Label(self, text = "Use WASD to move and arrow keys to look around \n Press I to enter editor mode, where:\n -->new line from/to existing point: Q \n --> new line from/to new point: R \n Press M to switch movement modes (not yet a feature) \n Press H for help", font = "Comic Sans")
+            description = Label(self, text = "Use WASD to move and arrow keys to look around \n\n Press [I] to enter editor mode, where you can add lines and vertices: \n-->[Q] connects a new line to an existing point; \n-->[R] creates a new point; \n\n Press M to switch movement modes (not yet a feature) \n\n Press H for help", font = Font(size = 15, family = "Helvetica"))
             description.pack(pady = 10)
-            button = Button(self, text = "Play", command = self.play)
+            button = Button(self, text = "Play", width = 20, height = 5, command = self.play)
             button.pack()
+            self.config(bg=bg)
         
         def play(self):
             self.controller.showFrame("Gameplay")
@@ -108,7 +109,7 @@ class MyGame(Tk):
         def key_up(self, event):
             if event.keycode in self.buttons:
                 self.buttons.pop(self.buttons.index(event.keycode))
-                self.interact(event.keycode, self.canvas)
+                self.guts.interact(event.keycode, self.canvas)
                 if event.keycode == 72:
                     self.help()
 
@@ -126,7 +127,7 @@ class MyGame(Tk):
 
         
 if __name__ == "__main__":
-    game = MyGame()
+    game = MyGame(bg="indigo")
     game.mainloop()
 
         
